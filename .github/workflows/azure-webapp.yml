@@ -1,0 +1,35 @@
+name: Deploy ASP.NET Core app to Azure Web App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@v2
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: 'Build with dotnet'
+      run: dotnet build --configuration Release
+
+    - name: 'Run tests with dotnet'
+      run: dotnet test --no-build --verbosity normal --configuration Release
+
+    - name: 'Publish to folder'
+      run: dotnet publish -c Release -o ${{ github.workspace }}/MyWebApp
+
+    - name: 'Deploy to Azure Web App'
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'your-app-service-name'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ${{ github.workspace }}/MyWebApp
